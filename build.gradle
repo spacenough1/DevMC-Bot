@@ -1,0 +1,52 @@
+plugins {
+    id 'java'
+    id 'io.github.goooler.shadow' version '8.1.7'
+}
+
+group = 'pl.codelen.edutor.bot'
+version = '1.0-DEV'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.yaml:snakeyaml:2.2'
+    implementation("net.dv8tion:JDA:5.0.0-beta.24") {
+        exclude module: 'opus-java'
+    }
+
+    implementation'org.tuxdude.logback.extensions:logback-colorizer:1.0.1'
+    implementation 'ch.qos.logback:logback-classic:1.5.6'
+}
+
+def targetJavaVersion = 17
+java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+        options.release.set(targetJavaVersion)
+    }
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'pl.codelen.edutor.bot.Bot'
+    }
+}
+
+shadowJar {
+    relocate 'org.yaml', 'pl.codelen.edutor.libs'
+}
+
+test {
+    useJUnitPlatform()
+}
